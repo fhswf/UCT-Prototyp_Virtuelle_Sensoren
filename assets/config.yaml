@@ -1,0 +1,101 @@
+stage2_specifications:
+  start: "2026-09-01 14:30:00" # Timestamps are in UTC.
+  end: "2026-09-01 15:29:59" # Timestamps are in UTC.
+  use_cpu: true
+  batch_size: 256
+  file_paths:
+    model: "assets/models/model__2026-09-01__SL_21e8daa443aa4edaaed284e9cdafa8b7.weights.h5"
+    scaler: "assets/models/scaler__2026-09-01__SL_21e8daa443aa4edaaed284e9cdafa8b7.pkl"
+  transfer_values_method: "median_all" # For example: "average".
+  cells_to_predict: null
+  # cells_to_predict: 134548, 133538, 132285, 131552, 132284, 133018, 135296, 136078, 138795, 140303, 140928, 140617, 138519, 135830, 135054, 136113, 140323, 141561, 134290, 134040, 132054, 135812, 136084, 136880, 133544, 133037, 133775, 136883, 139402, 136098, 138238, 133587, 155047, 135305, 134001, 130838, 138526, 146760 # Leave unset to process all cells; otherwise, list the cell IDs to process.
+  output_path: "output/"
+
+data:
+  db:
+    dbname: ""
+    schema: ""
+
+  tables:
+    - name: "messungen"
+      columns: [] # Leave empty to include all columns; otherwise, specify at least quell_id and messzeit_utc.
+      quell_typ: ["senseBox", "DWD"]
+      start_date: null # Set start and end dates here, or derive them from the latest DWD measurement and time_window.
+      end_date: null
+    - name: "quelle"
+      columns: [] # Leave empty to include all columns; otherwise, specify at least id, quell_properties, from_date, and until_date.
+      typ: ["senseBox", "DWD"]
+    - name: "location"
+      columns: ["id", "properties"]
+
+  use_geofeatures: true
+
+preprocessing:
+  # Extract JSON data.
+  SB_measured_values: 
+    temperature: ["value"]
+    humidity: ["value"]
+    pressure: ["value"]
+    lux: ["value"] 
+    uv: ["value"]
+
+  additional_parameters: 
+    lora: []
+    gateway: []
+    sensebox: []
+
+  quell_properties: [] # Set niota_standort to load location data from PostgreSQL.
+  raster_properties: ['NDVI', 'GEB_D', 'Albedo', 'BO_FEU', 'STRA_D', 'GEL_EXP', 'GEL_HOE', 'GEL_NEI', 'PARKP_D', 'BESCHIRM', 'GEL_FORM', 'WASSER_D', 'GRU_VOL_D', 'VERS_2025', 'VEG_HOE', 'LT_4', 'LT_14']
+
+  # Neighboring senseBoxes, DL, and DWD stations.
+  # The location column is required for the following preprocessing steps.
+  neighboring_senseBoxes: true
+  use_climatological_neighbors: true
+  number_of_neighbors: [5, 2] # [number of neighbors to consider, number of neighbors to return]
+  neighbors_reduction_method: "keep_n_closest_to_median" # Options: "agg_mean", "keep_n_closest_to_median", or "none".
+  consistency_threshold_neighbors: 15.0 # Maximum allowed temperature difference between the final two neighbors.
+  measured_values_neighbors: 
+    temperature: ["value"]
+    humidity: ["value"]
+    pressure: ["value"]
+    lux: ["value"] 
+    uv: ["value"]
+
+  DWD_10min: true
+  DWD_stations_10min: ["DWD001"]
+  DWD_measured_values_10min: 
+    # temperature: ["value"] # Use measured data.
+    temperature: 
+      main: ["value"] # Use smoothed data.
+
+  drop_columns: ["location_features", "id", "time_range_validity", "quell_typ", "quell_name", "location", "area_validity", "from_date", "until_date", "quell_properties", "location_id", "location_area_validity", "location_id_raster", "location_area_validity_raster"]
+  
+  NaN_handling:
+    NaN-fanactive_replace_with_0: true
+    dwd_NaN_replacement: "drop"  # Options: "neighbors", "drop", or a specific floating-point value.
+    neighbors: "drop" # Options: "each_other_else_dwd" or "drop".
+    drop_rest: true
+    exclude_from_drop: ["corrected_values"]
+
+  feature_engineering:
+    ema_15:
+      columns: []
+    ewma_15:
+      columns: []
+    measurement_time_handling: 
+      extract_month: false
+      extract_time: true
+      extract_doy: true
+
+  plausibility_checks:
+    enable: false
+    filter_implausible_samples: true
+    boundaries:
+      temperature_value: [-20, 50] # [minimum, maximum], or null to disable the check.
+    specific_values:
+      temperature_value: [0.000]
+    gradient_threshold_quantile: 0.995
+    mad_threshold_quantile: 0.995
+
+model:
+    hidden_units: [244, 204]
