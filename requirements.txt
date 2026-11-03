@@ -1,6 +1,6 @@
 absl-py==2.4.0
 astunparse==1.6.3
-certifi==2026.2.25
+certifi==2026.10.18
 charset-normalizer==3.4.6
 flatbuffers==25.12.19
 gast==0.7.0
