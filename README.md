@@ -84,4 +84,4 @@ Arbeitsverzeichnis gespeichert:
 
 Copyright 2026 Urban Climate Twin, Fachhochschule Südwestfalen
 
-Lizenziert unter der [Apache License 2.0](LICENSE).
+Lizenziert unter der [Apache License 2.0](LICENSE.md).
