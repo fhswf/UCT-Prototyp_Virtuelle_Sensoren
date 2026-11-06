@@ -79,3 +79,9 @@ Arbeitsverzeichnis gespeichert:
 - `.csv` mit den Vorhersagewerten und zugehörigen Daten
 - `.shp` mit den räumlichen Vorhersagen (zusammen mit den zugehörigen
   Shapefile-Dateien wie `.dbf`, `.shx` und `.prj`)
+
+## Lizenz
+
+Copyright 2026 Urban Climate Twin, Fachhochschule Südwestfalen
+
+Lizenziert unter der [Apache License 2.0](LICENSE).
