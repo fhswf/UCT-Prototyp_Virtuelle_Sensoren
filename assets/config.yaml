@@ -1,6 +1,6 @@
 stage2_specifications:
-  start: "2026-09-01 14:30:00" # Timestamps are in UTC.
-  end: "2026-09-01 15:29:59" # Timestamps are in UTC.
+  start:  # Timestamps are in UTC.
+  end:  # Timestamps are in UTC.
   use_cpu: true
   batch_size: 256
   file_paths:
